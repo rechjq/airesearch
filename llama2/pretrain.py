@@ -69,12 +69,12 @@ def load_checkpoint_model(ckpt_path, device):
             state_dict[k[len(unwanted_prefix) :]] = state_dict.pop(k)
     model.load_state_dict(state_dict)
     return model
-def pretrain(max_epoch, train_loader, config:LLamaConfig, model,ddp,device):
+def pretrain(max_epoch, train_loader, config:LLamaConfig, model:Transformer,optimizer, ddp,device):
     start_time=time.time()
     train_config = config.trainArgs
     logger = get_logger(os.path.join(train_config.output,'log.log'))
     ptdtype = {"float32": torch.float32, "bfloat16": torch.bfloat16, "float16": torch.float16}[train_config.dtype]
-    optimizer = model.configure_optimizers(train_config.weight_decay, train_config.learning_rate, (train_config.beta1, train_config.beta2), train_config.device_type)
+    
     iter_per_epoch=len(train_loader)
     ctx = (
         nullcontext()
@@ -138,12 +138,12 @@ def pretrain(max_epoch, train_loader, config:LLamaConfig, model,ddp,device):
                     torch.save(model.state_dict(),'{}/iter_{}.pth'.format(train_config.output,int(step+epoch*iter_per_epoch)))
                     model.train()
 
-def sft(max_epoch, train_loader, config:LLamaConfig, model,ddp,device):
+def sft(max_epoch, train_loader, config:LLamaConfig, model,optimizer, ddp,device):
     start_time=time.time()
     train_config = config.trainArgs
     logger = get_logger(os.path.join(train_config.output,'log.log'))
     ptdtype = {"float32": torch.float32, "bfloat16": torch.bfloat16, "float16": torch.float16}[train_config.dtype]
-    optimizer = model.configure_optimizers(train_config.weight_decay, train_config.learning_rate, (train_config.beta1, train_config.beta2), train_config.device_type)
+#optimizer = model.configure_optimizers(train_config.weight_decay, train_config.learning_rate, (train_config.beta1, train_config.beta2), train_config.device_type)
     iter_per_epoch=len(train_loader)
     ctx = (
         nullcontext()
@@ -292,6 +292,7 @@ def main():
     else:
         model = scratch_model(llamaconfig.modelArgs)
     model.to(device)
+    optimizer = model.configure_optimizers(trainArgs.weight_decay, trainArgs.learning_rate, (trainArgs.beta1, trainArgs.beta2), trainArgs.device_type)
     if ddp:
         model._ddp_params_and_buffers_to_ignore = {"freqs_cis"}
         model = DDP(model, device_ids=[ddp_local_rank])
@@ -300,7 +301,7 @@ def main():
     print("dataset  prepare..................................")
     train = TrainFunction[args.module]
     print("start train..................................")
-    train(max_epoch=trainArgs.max_epoch, train_loader=train_loader,config=llamaconfig,model=model, ddp=ddp,device=device)
+    train(max_epoch=trainArgs.max_epoch, train_loader=train_loader,config=llamaconfig,model=model,optimizer=optimizer, ddp=ddp,device=device)
     if ddp:
         destroy_process_group()
 
