@@ -78,7 +78,7 @@ def pretrain(max_epoch, train_loader, config:LLamaConfig, model:Transformer,opti
     iter_per_epoch=len(train_loader)
     ctx = (
         nullcontext()
-        if train_config.device_type == "cpu"
+        if train_config.device == "cpu"
         else torch.amp.autocast(device_type=train_config.device, dtype=ptdtype)
     )
     scaler = torch.cuda.amp.GradScaler(enabled=(train_config.dtype == 'float16'))
@@ -87,7 +87,7 @@ def pretrain(max_epoch, train_loader, config:LLamaConfig, model:Transformer,opti
         for step, (X, Y) in enumerate(train_loader):
             X=X.to(device)
             Y=Y.to(device)
-            lr = get_lr(epoch*iter_per_epoch+step) if train_config.decay_lr else train_config.learning_rate
+            lr = get_lr(epoch*iter_per_epoch+step, train_config) if train_config.decay_lr else train_config.learning_rate
             for param_group in optimizer.param_groups:
                 param_group['lr'] = lr
             # and using the GradScaler if data type is float16
