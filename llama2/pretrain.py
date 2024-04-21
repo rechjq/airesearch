@@ -292,8 +292,11 @@ def main():
     if ddp:
         model._ddp_params_and_buffers_to_ignore = {"freqs_cis"}
         model = DDP(model, device_ids=[ddp_local_rank])
+    print("load model success..................................")
     train_loader = _getdata(args, llamaconfig.modelArgs.max_seq_len, trainArgs.batch_size,module=args.module)
+    print("dataset  prepare..................................")
     train = TrainFunction[args.module == 'pretrain']
+    print("start train..................................")
     train(max_epoch=trainArgs.max_epoch, train_loader=train_loader,config=llamaconfig,model=model, ddp=ddp,device=device)
     if ddp:
         destroy_process_group()
