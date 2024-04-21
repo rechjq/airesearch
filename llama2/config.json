@@ -1,0 +1,32 @@
+{
+  "model": {
+      "dim": 4096,
+      "n_layers": 8,
+      "n_heads": 8,
+      "n_kv_heads": 8,
+      "vocab_size": 152064,
+      "multiple_of": 32,
+      "max_seq_len": 512,
+      "dropout": 0.0
+  },
+  "train":{
+    "learning_rate": 3e-4,
+    "weight_decay": 1e-1,
+    "beta1": 0.9,
+    "beta2": 0.95,
+    "grad_clip": 1.0,
+    "max_epoch": 1,
+    "log_interval": 100,
+    "batch_size": 16,
+    "gradient_accumulation_steps": 1,
+    "decay_lr": true,
+    "min_lr": 1e-5,
+    "lr_decay_iters": 80000,
+    "warmup_iters": 1000,
+    "device": "cuda",
+    "dtype": "float16",
+    "output": "out",
+    "backend": "nccl",
+    "best_val_loss": 1e9
+  }
+}
