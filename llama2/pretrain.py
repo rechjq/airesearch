@@ -176,7 +176,6 @@ def sft(max_epoch, train_loader, config:LLamaConfig, model,ddp,device):
                 if train_config.grad_clip != 0.0:
                     scaler.unscale_(optimizer)
                     torch.nn.utils.clip_grad_norm_(model.parameters(), train_config.grad_clip)
-                
                 scaler.step(optimizer) #内部会调:optimizer.step()
                 scaler.update()
             # flush the gradients as soon as we can, no need for this memory anymore
@@ -284,8 +283,6 @@ def main():
     torch.backends.cuda.matmul.allow_tf32 = True  # allow tf32 on matmul
     torch.backends.cudnn.allow_tf32 = True  # allow tf32 on cudnn
     #ptdtype = {"float32": torch.float32, "bfloat16": torch.bfloat16, "float16": torch.float16}[trainArgs.dtype]
-    
-
     
     if args.checkpoint:
         model = load_checkpoint_model(args.checkpoint)

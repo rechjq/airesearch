@@ -1,12 +1,12 @@
 {
   "model": {
       "dim": 4096,
-      "n_layers": 8,
-      "n_heads": 8,
-      "n_kv_heads": 8,
+      "n_layers": 32,
+      "n_heads": 32,
+      "n_kv_heads": 32,
       "vocab_size": 152064,
       "multiple_of": 32,
-      "max_seq_len": 512,
+      "max_seq_len": 32768,
       "dropout": 0.0
   },
   "train":{

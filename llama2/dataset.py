@@ -7,13 +7,13 @@ class PretrainDataset(Dataset):
         if memmap:
             with open(data_path_lst[0],'r') as f:
                 nbytes = f.seek(0,2)
-                flen = f.tell() // np.dtype('uint16').itemsize
-            self.data = np.memmap(data_path_lst[0],dtype=np.dtype('uint16'),shape=(flen//max_length,max_length))
+                flen = f.tell() // np.dtype('uint32').itemsize
+            self.data = np.memmap(data_path_lst[0],dtype=np.dtype('uint32'),shape=(flen//max_length,max_length))
         else:
             data_lst=[]
             for data_path in data_path_lst:
                 with open(data_path,'rb') as f:
-                    data=np.fromfile(f,dtype=np.uint16)
+                    data=np.fromfile(f,dtype=np.uint32)
                     data_lst.append(data)
             data = np.concatenate(data_lst)
             data = data[:max_length*int(len(data)/max_length)]
