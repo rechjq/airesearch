@@ -13,6 +13,9 @@ from torch.nn.parallel  import  DistributedDataParallel  as DDP
 import pandas as pd
 from sptokenizer  import getTokenizerModel 
 import  torch.nn.functional  as F
+
+## torchrun --standalone --nproc_per_node=4 pretrain.py OR python -m torch.distributed.launch --nproc_per_node=4 pretrain.py
+
 def get_logger(filename, verbosity=1, name=None):
     level_dict = {0: logging.DEBUG, 1: logging.INFO, 2: logging.WARNING}
     formatter = logging.Formatter(
@@ -295,7 +298,7 @@ def main():
     print("load model success..................................")
     train_loader = _getdata(args, llamaconfig.modelArgs.max_seq_len, trainArgs.batch_size,module=args.module)
     print("dataset  prepare..................................")
-    train = TrainFunction[args.module == 'pretrain']
+    train = TrainFunction[args.module]
     print("start train..................................")
     train(max_epoch=trainArgs.max_epoch, train_loader=train_loader,config=llamaconfig,model=model, ddp=ddp,device=device)
     if ddp:
