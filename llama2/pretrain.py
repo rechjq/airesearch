@@ -126,17 +126,16 @@ def pretrain(max_epoch, train_loader, config:LLamaConfig, model:Transformer,opti
                         loss.item(), 
                         optimizer.param_groups[-1]['lr'],
                         spend_time / (step+1) * iter_per_epoch // 60 - spend_time // 60))
-        #
-            if step % train_config.save_interval == 0:
-                if ddp:
-                    if torch.distributed.get_rank() == 0:
-                        model.eval()
-                        torch.save(model.module.state_dict(),'{}/iter_{}.pth'.format(train_config.output,int(step+epoch*iter_per_epoch)))
-                        model.train()
-                else:
-                    model.eval()
-                    torch.save(model.state_dict(),'{}/iter_{}.pth'.format(train_config.output,int(step+epoch*iter_per_epoch)))
-                    model.train()
+
+        if ddp:
+            if torch.distributed.get_rank() == 0:
+                model.eval()
+                torch.save(model.module.state_dict(),'{}/iter_{}.pth'.format(train_config.output,int(step+epoch*iter_per_epoch)))
+                model.train()
+        else:
+            model.eval()
+            torch.save(model.state_dict(),'{}/iter_{}.pth'.format(train_config.output,int(step+epoch*iter_per_epoch)))
+            model.train()
 
 def sft(max_epoch, train_loader, config:LLamaConfig, model,optimizer, ddp,device):
     start_time=time.time()
@@ -195,17 +194,16 @@ def sft(max_epoch, train_loader, config:LLamaConfig, model,optimizer, ddp,device
                         loss.item(), 
                         optimizer.param_groups[-1]['lr'],
                         spend_time / (step+1) * iter_per_epoch // 60 - spend_time // 60))
-        #
-            if step % train_config.save_interval == 0:
-                if ddp:
-                    if torch.distributed.get_rank() == 0:
-                        model.eval()
-                        torch.save(model.module.state_dict(),'{}/iter_{}.pth'.format(train_config.output,int(step+epoch*iter_per_epoch)))
-                        model.train()
-                else:
-                    model.eval()
-                    torch.save(model.state_dict(),'{}/iter_{}.pth'.format(train_config.output,int(step+epoch*iter_per_epoch)))
-                    model.train()
+    
+        if ddp:
+            if torch.distributed.get_rank() == 0:
+                model.eval()
+                torch.save(model.module.state_dict(),'{}/iter_{}.pth'.format(train_config.output,int(step+epoch*iter_per_epoch)))
+                model.train()
+        else:
+            model.eval()
+            torch.save(model.state_dict(),'{}/iter_{}.pth'.format(train_config.output,int(step+epoch*iter_per_epoch)))
+            model.train()
 
 def _getdata(args, max_seq_len, batch_size, module='pretrain'):
     if module == "pretrain":
@@ -292,7 +290,7 @@ def main():
     else:
         model = scratch_model(llamaconfig.modelArgs)
     model.to(device)
-    optimizer = model.configure_optimizers(trainArgs.weight_decay, trainArgs.learning_rate, (trainArgs.beta1, trainArgs.beta2), trainArgs.device_type)
+    optimizer = model.configure_optimizers(trainArgs.weight_decay, trainArgs.learning_rate, (trainArgs.beta1, trainArgs.beta2), device)
     if ddp:
         model._ddp_params_and_buffers_to_ignore = {"freqs_cis"}
         model = DDP(model, device_ids=[ddp_local_rank])
