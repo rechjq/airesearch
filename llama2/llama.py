@@ -302,7 +302,9 @@ class Transformer(nn.Module):
 
     def forward(self, tokens: torch.Tensor, targets: Optional[torch.Tensor] = None) -> torch.Tensor:
         _bsz, seqlen = tokens.shape
+        #tokens:[batch_size, max_seq_length-1]
         h = self.tok_embeddings(tokens)
+        # h:[batch_size,max_seq_length-1, dim]
         h = self.dropout(h)
         freqs_cos = self.freqs_cos[:seqlen]
         freqs_sin = self.freqs_sin[:seqlen]
@@ -312,8 +314,13 @@ class Transformer(nn.Module):
         h = self.norm(h)
 
         if targets is not None:
-            # if we are given some desired targets also calculate the loss
+            # #targets: [batch_size, max_seq_length]
             logits = self.output(h)
+            #logits: [batch_size, max_seq_length-1, vocal_size]
+            
+            #  logits-> [batch_size *max_seq_length-1,vocal_size]
+            # targets -> [batch_size *max_seq_length-1]
+            # last_losss 是单个值
             self.last_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
             # h[:, [-1], :]  [-1]取最后一个数据,  h维度:[3,4,4], h[:,[-1],:] 得到 [3,1,4] 这个1是最后一个数据  

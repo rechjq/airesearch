@@ -85,8 +85,10 @@ def pretrain(max_epoch, train_loader, config:LLamaConfig, model:Transformer,opti
     raw_model = model.module if ddp else model 
     for epoch in range(train_config.max_epoch):
         for step, (X, Y) in enumerate(train_loader):
+            #[batch_size, max_seq_length]
             X=X.to(device)
             Y=Y.to(device)
+
             lr = get_lr(epoch*iter_per_epoch+step, train_config) if train_config.decay_lr else train_config.learning_rate
             for param_group in optimizer.param_groups:
                 param_group['lr'] = lr
@@ -152,6 +154,7 @@ def sft(max_epoch, train_loader, config:LLamaConfig, model,optimizer, ddp,device
     scaler = torch.cuda.amp.GradScaler(enabled=(train_config.dtype == 'float16')) 
     for epoch in range(train_config.max_epoch):
         for step, (X, Y, loss_mask) in enumerate(train_loader):
+            #[batch_size, max_seq_length]
             X=X.to(device)
             Y=Y.to(device)
             loss_mask=loss_mask.to(device)
