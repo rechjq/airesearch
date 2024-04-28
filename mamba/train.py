@@ -1,14 +1,24 @@
-<<<<<<< HEAD
+from transformers import Trainer
+import torch
+import os
 
-from mamba_ssm.models.mixer_seq_simple import MambaLMHeadModel
-from mamba_ssm.models.config_mamba import MambaConfig
+class MambaTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False):
+        input_ids = inputs.pop("input_ids")
+        lm_logits = model(input_ids).logits
 
-def scratch_model(ma:MambaConfig,device, dtype):
-    return MambaLMHeadModel(ma, device=device, dtype=dtype)
-def load_model(load_path,device, dtype):
-    return MambaLMHeadModel.from_pretrained(load_path, device=device, dtype=dtype)
+        labels = input_ids.to(lm_logits.device)
+        shift_logits = lm_logits[:, :-1, :].contiguous()
+        labels = labels[:, 1:].contiguous()
 
+        loss_fct = torch.nn.CrossEntropyLoss()
+        lm_loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), labels.view(-1))
 
-=======
-from mamba_ssm  import  M
->>>>>>> e46665814207f781e973429af5113a444f797493
+        return lm_loss
+
+    def save_model(self, output_dir, _internal_call):
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            
+        torch.save(self.model.state_dict(), f"{output_dir}/pytorch_model.bin")
+        self.tokenizer.save_pretrained(output_dir)
