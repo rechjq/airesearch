@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 from mamba_ssm.models.mixer_seq_simple import MambaLMHeadModel
 from mamba_ssm.models.config_mamba import MambaConfig
@@ -8,3 +9,6 @@ def load_model(load_path,device, dtype):
     return MambaLMHeadModel.from_pretrained(load_path, device=device, dtype=dtype)
 
 
+=======
+from mamba_ssm  import  M
+>>>>>>> e46665814207f781e973429af5113a444f797493

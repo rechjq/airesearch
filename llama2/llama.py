@@ -328,7 +328,6 @@ class Transformer(nn.Module):
             self.last_loss = None
         return logits
 
-
     #@torch.inference_mode()
     @torch.no_grad()
     def generate(self, idx, eos, max_new_tokens, temperature=1.0, top_k=None):
